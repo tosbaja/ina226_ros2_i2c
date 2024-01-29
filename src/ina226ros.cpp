@@ -15,6 +15,10 @@ INA226Test::INA226Test()
   ina226_->waitUntilConversionCompleted(); //if you comment this line the first data might be zero
   this->declare_parameter<int>("address", 0x0);
   this->declare_parameter<int>("connected_bus", 0x0);
+  battery_level_publisher_ = this->create_publisher<std_msgs::msg::Float32>("battery_level", 10);
+  battery_voltage_publisher_ = this->create_publisher<std_msgs::msg::Float32>("battery_voltage_V", 10);
+  power_consumption_publisher_ = this->create_publisher<std_msgs::msg::Float32>("power_consumption_mW", 10);
+  current_publisher_ = this->create_publisher<std_msgs::msg::Float32>("current_mA", 10);
   std::chrono::duration<int64_t, std::milli> frequency =
       1000ms / 1;
   timer_ = this->create_wall_timer(frequency, std::bind(&INA226Test::handleInput, this));
@@ -22,6 +26,7 @@ INA226Test::INA226Test()
 
 void INA226Test::handleInput()
 {
+  std_msgs::msg::Float32 floatMsg;
   float shuntVoltage_mV = 0.0;
   float loadVoltage_V = 0.0;
   float busVoltage_V = 0.0;
@@ -34,6 +39,21 @@ void INA226Test::handleInput()
   current_mA = ina226_->getCurrent_mA();
   power_mW = ina226_->getBusPower();
   loadVoltage_V  = busVoltage_V + (shuntVoltage_mV / 1000);
+
+  floatMsg.data = busVoltage_V;
+  battery_voltage_publisher_->publish(floatMsg);
+
+
+  floatMsg.data = ((busVoltage_V - 10.5) / 2.1) * 100;
+  battery_level_publisher_->publish(floatMsg);
+
+
+  floatMsg.data = power_mW;
+  power_consumption_publisher_->publish(floatMsg);
+
+
+  floatMsg.data = current_mA;
+  current_publisher_->publish(floatMsg);
  
   std::cout << "Shunt Voltage [mV]: " <<  shuntVoltage_mV << std::endl;
   std::cout << "Bus Voltage [V]: " <<  busVoltage_V << std::endl;
