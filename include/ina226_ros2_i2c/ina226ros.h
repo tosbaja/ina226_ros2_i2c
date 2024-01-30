@@ -1,6 +1,3 @@
-#ifndef MPU6050DRIVER_H
-#define MPU6050DRIVER_H
-
 #include "ina226_ros2_i2c/ina226driver.h"
 
 #include "rclcpp/rclcpp.hpp"
@@ -19,7 +16,11 @@ class INA226Test : public rclcpp::Node {
   size_t count_;
   rclcpp::TimerBase::SharedPtr timer_;
   void handleInput();
-  void declareParameters();
-};
+  void declareSetParameters();
 
-#endif  // MPU6050DRIVER_H
+  uint8_t adress_parameter_;
+  int bus_parameter_;
+  float resistor_parameter_;
+  float current_parameter_;
+  float correction_factor_parameter_;
+};

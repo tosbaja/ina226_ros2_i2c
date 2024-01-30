@@ -1,4 +1,4 @@
 ina226_sensor_node:
   ros__parameters:
-    address: 0x50
-    connected_bus: 3
+    address: 0x40
+    connected_bus: 1

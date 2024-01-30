@@ -7,14 +7,14 @@
 using namespace std::chrono_literals;
 
 INA226Test::INA226Test()
-    : Node("ina226test"), ina226_{std::make_unique<INA226_WE>(0x40,3)}
+    : Node("ina226")
 {
+  declareSetParameters();
+  ina226_ = std::make_unique<INA226_WE>(adress_parameter_,bus_parameter_);
   ina226_->init();
-  ina226_->setResistorRange(0.005, 10.0); // choose resistor 0.1 Ohm and gain range up to 1.3A 
-  ina226_->setCorrectionFactor(0.647);
+  ina226_->setResistorRange(resistor_parameter_, current_parameter_); // choose resistor 0.1 Ohm and gain range up to 1.3A 
+  ina226_->setCorrectionFactor(correction_factor_parameter_);
   ina226_->waitUntilConversionCompleted(); //if you comment this line the first data might be zero
-  this->declare_parameter<int>("address", 0x0);
-  this->declare_parameter<int>("connected_bus", 0x0);
   battery_level_publisher_ = this->create_publisher<std_msgs::msg::Float32>("battery_level", 10);
   battery_voltage_publisher_ = this->create_publisher<std_msgs::msg::Float32>("battery_voltage_V", 10);
   power_consumption_publisher_ = this->create_publisher<std_msgs::msg::Float32>("power_consumption_mW", 10);
@@ -68,6 +68,21 @@ void INA226Test::handleInput()
   {
     std::cout << "Overflow! Choose higher current range" << std::endl;
   }
+}
+
+void INA226Test::declareSetParameters()
+{
+  this->declare_parameter("address", 0x40);
+  this->declare_parameter("connected_bus", 1);
+  this->declare_parameter("resistor_ohms", 0.005);
+  this->declare_parameter("current", 10.0);
+  this->declare_parameter("correction_factor", 0.647);
+
+  this->get_parameter("address", adress_parameter_);
+  this->get_parameter("connected_bus", bus_parameter_);
+  this->get_parameter("resistor_ohms", resistor_parameter_);
+  this->get_parameter("current", current_parameter_);
+  this->get_parameter("correction_factor", correction_factor_parameter_);
 }
 
 int main(int argc, char* argv[])
